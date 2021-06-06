@@ -130,11 +130,11 @@ class Pagination extends React.Component<any, any> {
     const {totalRecords = 0, itemsPerPage = 30, maxSize = 0, initPageSize} = this.props;
     this.initDataPage(totalRecords, itemsPerPage, maxSize, initPageSize);
     this.currentPage = this.props.currentPage;
-    if (this.totalRecords === 0) {
+    if (!this.totalRecords || this.totalRecords <= 0) {
       return null;
     }
 
-    if (this.totalPages === 1) {
+    if (!this.totalPages || this.totalPages <= 1) {
       return null;
     }
     // @ts-ignore
