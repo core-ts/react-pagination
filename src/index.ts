@@ -5,29 +5,27 @@ const LEFT_PAGE = 'LEFT';
 const RIGHT_PAGE = 'RIGHT';
 
 export interface PageChange {
-  currentPage: number;
-  itemsPerPage: number;
+  page: number; // currentPage
+  size: number; // itemsPerPage
   totalPages?: number;
-  totalRecords?: number;
+  total?: number;
 }
 export interface Props {
-  initPageSize?: number;
-  itemsPerPage?: number;
-  currentPage?: number;
-  maxSize?: number;
-  totalRecords?: number;
-  onPageChanged: (e: PageChange) => void;
+  init?: number;
+  size?: number;
+  page?: number;
+  max?: number;
+  total?: number;
+  onChange?: (e: PageChange) => void;
   className?: string;
 }
 const range = (from: number, to: number, step: number = 1) => {
   let i = from;
   const ranges = [];
-
   while (i <= to) {
     ranges.push(i);
     i += step;
   }
-
   return ranges;
 };
 
@@ -42,22 +40,22 @@ export function getTotalPages(totalRecords: number, itemsPerPage: number): numbe
   return (x <= 0 ? 1 : x);
 }
 export class Pagination extends React.Component<Props, any> {
-  totalRecords: number;
+  total: number;
   totalPages: number;
-  maxSize: number;
-  itemsPerPage: number;
-  currentPage: number;
-  initPageSize?: number;
+  max: number;
+  size: number;
+  page: number;
+  initSize?: number;
   constructor(props: Props) {
     super(props);
     // const {totalRecords = 0, pageSize: itemsPerPage = 12, maxSize = 7, initPageSize} = props;
     // this.initDataPage(totalRecords, itemsPerPage, maxSize, initPageSize);
-    this.totalRecords = getNumber(props.totalRecords, 0);
-    this.maxSize = getMaxSize(props.maxSize, 7);
-    this.itemsPerPage = getNumber(props.itemsPerPage, 12);
-    this.initPageSize = getNumber(props.initPageSize, this.itemsPerPage);
-    this.totalPages = getTotalPages(this.totalRecords, this.itemsPerPage);
-    this.currentPage = getNumber(props.currentPage, 1);
+    this.total = getNumber(props.total, 0);
+    this.max = getMaxSize(props.max, 7);
+    this.size = getNumber(props.size, 12);
+    this.initSize = getNumber(props.init, this.size);
+    this.totalPages = getTotalPages(this.total, this.size);
+    this.page = getNumber(props.page, 1);
   }
 
   componentDidMount() {
@@ -65,13 +63,13 @@ export class Pagination extends React.Component<Props, any> {
   }
 
   gotoPage = (page: number) => {
-    const { onPageChanged = f => f } = this.props;
-    this.currentPage = Math.max(0, Math.min(page, this.totalPages));
+    const { onChange: onPageChanged = f => f } = this.props;
+    this.page = Math.max(0, Math.min(page, this.totalPages));
     const paginationData = {
-      currentPage: this.currentPage,
-      itemsPerPage: this.itemsPerPage,
+      page: this.page,
+      size: this.size,
       totalPages: this.totalPages,
-      totalRecords: this.totalRecords
+      totalRecords: this.total
     };
 
     this.setState(() => onPageChanged(paginationData));
@@ -82,24 +80,24 @@ export class Pagination extends React.Component<Props, any> {
   }
   handleMoveLeft = (evt: { preventDefault: () => void; }) => {
     evt.preventDefault();
-    this.gotoPage(this.currentPage - this.maxSize * 2 - 1);
+    this.gotoPage(this.page - this.max * 2 - 1);
   }
   handleMoveRight = (evt: { preventDefault: () => void; }) => {
     evt.preventDefault();
-    this.gotoPage(this.currentPage + this.maxSize * 2 + 1);
+    this.gotoPage(this.page + this.max * 2 + 1);
   }
   fetchPageNumbers = () => {
     const totalPages = this.totalPages;
-    const maxSize = this.maxSize;
+    const maxSize = this.max;
 
-    const totalNumbers = this.maxSize * 2 + 3;
+    const totalNumbers = this.max * 2 + 3;
     const totalBlocks = totalNumbers + 2;
 
     if (totalPages > totalBlocks) {
       let pages = [];
 
-      const leftBound = this.currentPage - maxSize;
-      const rightBound = this.currentPage + maxSize;
+      const leftBound = this.page - maxSize;
+      const rightBound = this.page + maxSize;
       const beforeLastPage = totalPages - 1;
 
       const startPage = leftBound > 2 ? leftBound : 2;
@@ -131,12 +129,12 @@ export class Pagination extends React.Component<Props, any> {
   }
 
   render() {
-    this.itemsPerPage = getNumber(this.props.itemsPerPage, 12);
-    this.totalRecords = getNumber(this.props.totalRecords, 0);
+    this.size = getNumber(this.props.size, 12);
+    this.total = getNumber(this.props.total, 0);
     // this.maxSize = getMaxSize(this.props.maxSize, 7);
-    this.totalPages = getTotalPages(this.totalRecords, this.itemsPerPage);
-    this.currentPage = getNumber(this.props.currentPage, 1);
-    if (!this.totalRecords || this.totalRecords <= 0) {
+    this.totalPages = getTotalPages(this.total, this.size);
+    this.page = getNumber(this.props.page, 1);
+    if (!this.total || this.total <= 0) {
       return null;
     }
 
@@ -146,22 +144,22 @@ export class Pagination extends React.Component<Props, any> {
     const pages = this.fetchPageNumbers();
     const x = this;
     return (React.createElement(Fragment, null,
-      React.createElement("nav", { className: this.props.className, "aria-label": 'Countries Pagination' },
-        React.createElement("ul", { className: 'pagination' }, pages.map(function (page, index) {
+      React.createElement('nav', { className: this.props.className, 'aria-label': 'Countries Pagination' },
+        React.createElement('ul', { className: 'pagination' }, pages.map((page, index) => {
           if (page === LEFT_PAGE) {
-            return (React.createElement("li", { key: index, className: 'page-item' },
-              React.createElement("a", { className: 'page-link', "aria-label": 'Previous', onClick: x.handleMoveLeft },
-                React.createElement("span", { "aria-hidden": 'true' }, "\u00AB"),
-                React.createElement("span", { className: 'sr-only' }, "Previous"))));
+            return (React.createElement('li', { key: index, className: 'page-item' },
+              React.createElement('a', { className: 'page-link', 'aria-label': 'Previous', onClick: x.handleMoveLeft },
+                React.createElement('span', { 'aria-hidden': 'true' }, '\u00AB'),
+                React.createElement('span', { className: 'sr-only' }, 'Previous'))));
           }
           if (page === RIGHT_PAGE) {
-            return (React.createElement("li", { key: index, className: 'page-item' },
-              React.createElement("a", { className: 'page-link', "aria-label": 'Next', onClick: x.handleMoveRight },
-                React.createElement("span", { "aria-hidden": 'true' }, "\u00BB"),
-                React.createElement("span", { className: 'sr-only' }, "Next"))));
+            return (React.createElement('li', { key: index, className: 'page-item' },
+              React.createElement('a', { className: 'page-link', 'aria-label': 'Next', onClick: x.handleMoveRight },
+                React.createElement('span', { 'aria-hidden': 'true' }, '\u00BB'),
+                React.createElement('span', { className: 'sr-only' }, 'Next'))));
           }
-          return (React.createElement("li", { key: index, className: "page-item" + (x.currentPage === page ? ' active' : '') },
-            React.createElement("a", { className: 'page-link', onClick: function (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) { return x.handleClick(page as any, e); } }, page)));
+          return (React.createElement('li', { key: index, className: 'page-item' + (x.page === page ? ' active' : '') },
+            React.createElement('a', { className: 'page-link', onClick (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) { return x.handleClick(page as any, e); } }, page)));
         })))));
     /*
     return (
