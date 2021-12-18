@@ -1,13 +1,25 @@
-/* tslint:disable */
-// @ts-ignore
-import PropTypes from 'prop-types';
 import * as React from 'react';
-import {Fragment} from 'react';
+import { Fragment } from 'react';
 
 const LEFT_PAGE = 'LEFT';
 const RIGHT_PAGE = 'RIGHT';
 
-const range = (from, to, step = 1) => {
+export interface PageChange {
+  currentPage: number;
+  itemsPerPage: number;
+  totalPages?: number;
+  totalRecords?: number;
+}
+export interface Props {
+  initPageSize?: number;
+  itemsPerPage?: number;
+  currentPage?: number;
+  maxSize?: number;
+  totalRecords?: number;
+  onPageChanged: (e: PageChange) => void;
+  className?: string;
+}
+const range = (from: number, to: number, step: number = 1) => {
   let i = from;
   const ranges = [];
 
@@ -19,41 +31,41 @@ const range = (from, to, step = 1) => {
   return ranges;
 };
 
-
-class Pagination extends React.Component<any, any> {
+export function getNumber(n: number | undefined, m: number): number {
+  return (typeof n === 'number' && n !== undefined && n != null && n > 0 ? n : m);
+}
+export function getMaxSize(maxSize: number | undefined, m: number) {
+  return typeof maxSize === 'number' ? Math.max(0, Math.min(maxSize, 2)) : m;
+}
+export function getTotalPages(totalRecords: number, itemsPerPage: number): number {
+  const x = Math.ceil(totalRecords / itemsPerPage);
+  return (x <= 0 ? 1 : x);
+}
+export class Pagination extends React.Component<Props, any> {
   totalRecords: number;
   totalPages: number;
   maxSize: number;
   itemsPerPage: number;
   currentPage: number;
-
-  constructor(props) {
+  initPageSize?: number;
+  constructor(props: Props) {
     super(props);
-    const {totalRecords = 0, itemsPerPage = 30, maxSize = 0, initPageSize} = props;
-    this.initDataPage(totalRecords, itemsPerPage, maxSize, initPageSize);
+    // const {totalRecords = 0, pageSize: itemsPerPage = 12, maxSize = 7, initPageSize} = props;
+    // this.initDataPage(totalRecords, itemsPerPage, maxSize, initPageSize);
+    this.totalRecords = getNumber(props.totalRecords, 0);
+    this.maxSize = getMaxSize(props.maxSize, 7);
+    this.itemsPerPage = getNumber(props.itemsPerPage, 12);
+    this.initPageSize = getNumber(props.initPageSize, this.itemsPerPage);
+    this.totalPages = getTotalPages(this.totalRecords, this.itemsPerPage);
+    this.currentPage = getNumber(props.currentPage, 1);
   }
 
   componentDidMount() {
     // this.gotoPage(1);
   }
 
-  initDataPage(totalRecords, itemsPerPage, maxSize, initPageSize) {
-    this.itemsPerPage = typeof itemsPerPage === 'number' ? itemsPerPage : 30;
-    this.totalRecords = typeof totalRecords === 'number' ? totalRecords : 0;
-    this.maxSize =
-      typeof maxSize === 'number'
-        ? Math.max(0, Math.min(maxSize, 2))
-        : 0;
-    this.totalPages = initPageSize && initPageSize > 0 ?
-    Math.ceil((this.totalRecords - initPageSize) / this.itemsPerPage) + 1:  
-    Math.ceil(this.totalRecords / this.itemsPerPage);
-    this.totalPages = this.totalPages === 0 ? 1 : this.totalPages;
-  }
-
   gotoPage = (page: number) => {
-    // @ts-ignore
-    const {onPageChanged = f => f} = this.props;
-
+    const { onPageChanged = f => f } = this.props;
     this.currentPage = Math.max(0, Math.min(page, this.totalPages));
     const paginationData = {
       currentPage: this.currentPage,
@@ -64,27 +76,20 @@ class Pagination extends React.Component<any, any> {
 
     this.setState(() => onPageChanged(paginationData));
   }
-
-  handleClick = (page, evt) => {
+  handleClick = (page: number, evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     evt.preventDefault();
     this.gotoPage(page);
   }
-
-  handleMoveLeft = evt => {
+  handleMoveLeft = (evt: { preventDefault: () => void; }) => {
     evt.preventDefault();
-    // @ts-ignore
     this.gotoPage(this.currentPage - this.maxSize * 2 - 1);
   }
-
-  handleMoveRight = evt => {
+  handleMoveRight = (evt: { preventDefault: () => void; }) => {
     evt.preventDefault();
-    // @ts-ignore
     this.gotoPage(this.currentPage + this.maxSize * 2 + 1);
   }
-
   fetchPageNumbers = () => {
     const totalPages = this.totalPages;
-    // @ts-ignore
     const maxSize = this.maxSize;
 
     const totalNumbers = this.maxSize * 2 + 3;
@@ -126,10 +131,11 @@ class Pagination extends React.Component<any, any> {
   }
 
   render() {
-    // @ts-ignore
-    const {totalRecords = 0, itemsPerPage = 30, maxSize = 0, initPageSize} = this.props;
-    this.initDataPage(totalRecords, itemsPerPage, maxSize, initPageSize);
-    this.currentPage = this.props.currentPage;
+    this.itemsPerPage = getNumber(this.props.itemsPerPage, 12);
+    this.totalRecords = getNumber(this.props.totalRecords, 0);
+    // this.maxSize = getMaxSize(this.props.maxSize, 7);
+    this.totalPages = getTotalPages(this.totalRecords, this.itemsPerPage);
+    this.currentPage = getNumber(this.props.currentPage, 1);
     if (!this.totalRecords || this.totalRecords <= 0) {
       return null;
     }
@@ -137,28 +143,28 @@ class Pagination extends React.Component<any, any> {
     if (!this.totalPages || this.totalPages <= 1) {
       return null;
     }
-    // @ts-ignore
     const pages = this.fetchPageNumbers();
+    const x = this;
+    return (React.createElement(Fragment, null,
+      React.createElement("nav", { className: this.props.className, "aria-label": 'Countries Pagination' },
+        React.createElement("ul", { className: 'pagination' }, pages.map(function (page, index) {
+          if (page === LEFT_PAGE) {
+            return (React.createElement("li", { key: index, className: 'page-item' },
+              React.createElement("a", { className: 'page-link', "aria-label": 'Previous', onClick: x.handleMoveLeft },
+                React.createElement("span", { "aria-hidden": 'true' }, "\u00AB"),
+                React.createElement("span", { className: 'sr-only' }, "Previous"))));
+          }
+          if (page === RIGHT_PAGE) {
+            return (React.createElement("li", { key: index, className: 'page-item' },
+              React.createElement("a", { className: 'page-link', "aria-label": 'Next', onClick: x.handleMoveRight },
+                React.createElement("span", { "aria-hidden": 'true' }, "\u00BB"),
+                React.createElement("span", { className: 'sr-only' }, "Next"))));
+          }
+          return (React.createElement("li", { key: index, className: "page-item" + (x.currentPage === page ? ' active' : '') },
+            React.createElement("a", { className: 'page-link', onClick: function (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) { return x.handleClick(page as any, e); } }, page)));
+        })))));
+    /*
     return (
-      React.createElement(Fragment, null,
-        React.createElement("nav", { className: this.props.className, "aria-label": 'Countries Pagination' },
-          React.createElement("ul", { className: 'pagination' }, pages.map(function(page, index){
-            if (page === LEFT_PAGE){
-              return (React.createElement("li", { key: index, className: 'page-item' },
-                React.createElement("a", { className: 'page-link', "aria-label": 'Previous', onClick: this.handleMoveLeft },
-                  React.createElement("span", { "aria-hidden": 'true' }, "\u00AB"),
-                  React.createElement("span", { className: 'sr-only' }, "Previous"))));
-            }
-            if (page === RIGHT_PAGE){
-              return (React.createElement("li", { key: index, className: 'page-item' },
-                React.createElement("a", { className: 'page-link', "aria-label": 'Next', onClick: this.handleMoveRight },
-                  React.createElement("span", { "aria-hidden": 'true' }, "\u00BB"),
-                  React.createElement("span", { className: 'sr-only' }, "Next"))));
-            }
-            return (React.createElement("li", { key: index, className: "page-item" + (this.currentPage === page ? ' active' : '') },
-              React.createElement("a", { className: 'page-link', onClick: function(e){ return this.handleClick(page, e); } }, page)));
-          }))))
-      /*
       <Fragment>
         <nav className={this.props.className} aria-label='Countries Pagination'>
           <ul className='pagination'>
@@ -208,17 +214,8 @@ class Pagination extends React.Component<any, any> {
             })}
           </ul>
         </nav>
-      </Fragment>*/
-    );
+      </Fragment>
+    );*/
   }
 }
-
-// @ts-ignore
-Pagination.propTypes = {
-  itemsPerPage: PropTypes.number,
-  maxSize: PropTypes.number,
-  onPageChanged: PropTypes.func,
-  totalRecords: PropTypes.number,
-};
-
 export default Pagination;
