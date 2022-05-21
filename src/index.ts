@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Fragment } from 'react';
 
+import '../pagination.css';
+
 const LEFT_PAGE = 'LEFT';
 const RIGHT_PAGE = 'RIGHT';
 

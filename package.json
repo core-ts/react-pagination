@@ -1,6 +1,6 @@
 {
-  "name": "react-pagination-x",
-  "version": "0.0.2",
+  "name": "reactx-pagination",
+  "version": "0.0.1",
   "description": "react-pagination",
   "main": "./lib/index.js",
   "types": "./src/index.ts",
