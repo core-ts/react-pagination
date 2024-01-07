@@ -3,6 +3,9 @@ import { Fragment } from 'react';
 
 import '../pagination.css';
 
+export class resources {
+  static area = true;
+}
 const LEFT_PAGE = 'LEFT';
 const RIGHT_PAGE = 'RIGHT';
 
@@ -82,11 +85,13 @@ export class Pagination extends React.Component<Props, any> {
   }
   handleMoveLeft = (evt: { preventDefault: () => void; }) => {
     evt.preventDefault();
-    this.gotoPage(this.page - this.max * 2 - 1);
+    const n = resources.area ? this.page - this.max * 2 - 1 : this.page - 1;
+    this.gotoPage(n);
   }
   handleMoveRight = (evt: { preventDefault: () => void; }) => {
     evt.preventDefault();
-    this.gotoPage(this.page + this.max * 2 + 1);
+    const n = resources.area ? this.page + this.max * 2 + 1 : this.page + 1;
+    this.gotoPage(n);
   }
   fetchPageNumbers = () => {
     const totalPages = this.totalPages;
@@ -149,13 +154,13 @@ export class Pagination extends React.Component<Props, any> {
       React.createElement('nav', { className: this.props.className, 'aria-label': 'Countries Pagination' },
         React.createElement('ul', { className: 'pagination' }, pages.map((page, index) => {
           if (page === LEFT_PAGE) {
-            return (React.createElement('li', { key: index, className: 'page-item' },
+            return (React.createElement('li', { key: index, className: 'page-item left' },
               React.createElement('a', { className: 'page-link', 'aria-label': 'Previous', onClick: x.handleMoveLeft },
                 React.createElement('span', { 'aria-hidden': 'true' }, '\u00AB'),
                 React.createElement('span', { className: 'sr-only' }, 'Previous'))));
           }
           if (page === RIGHT_PAGE) {
-            return (React.createElement('li', { key: index, className: 'page-item' },
+            return (React.createElement('li', { key: index, className: 'page-item right' },
               React.createElement('a', { className: 'page-link', 'aria-label': 'Next', onClick: x.handleMoveRight },
                 React.createElement('span', { 'aria-hidden': 'true' }, '\u00BB'),
                 React.createElement('span', { className: 'sr-only' }, 'Next'))));
