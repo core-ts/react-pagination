@@ -10,6 +10,7 @@
 }
 .pagination > li > .page-link {
   padding: 0;
+  padding-top: 2px;
   height: 32px;
   min-width: 32px;
 }
